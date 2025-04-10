@@ -1,34 +1,55 @@
-{% extends 'core/base.html' %} {% block title %}Question Detail - ClineSolution{% endblock %} {% block content %}
-<h1>Question</h1>
-<div>
-    <p>{{ question.text }}</p>
-    <p>Asked by: {{ question.user.username }} on {{ question.created_at }}</p>
+{% extends 'layout.html' %} {% load widget_tweaks %} {% block title %}{{ question.title }}{% endblock %} {% block content %}
+
+<div class="max-w-3xl mx-auto px-4">
+
+    <!-- Question Card -->
+    <div class="bg-white p-6 rounded-xl shadow mb-6 border border-gray-200">
+        <h2 class="text-2xl font-bold text-indigo-700">{{ question.title }}</h2>
+        <p class="text-sm text-gray-500 mt-2">
+            Asked by <span class="font-medium text-gray-700">{{ question.user.username }}</span> on {{ question.created_at|date:"M d, Y" }}
+        </p>
+    </div>
+
+    <!-- Answer Form -->
+    <div class="bg-white p-6 rounded-xl shadow-lg mb-8 border border-gray-200">
+        <h3 class="text-xl font-semibold text-gray-800 mb-4">Write Your Answer</h3>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-4">
+                <label for="content" class="block text-gray-700 text-sm font-semibold mb-2">Answer</label> {{ form.content|add_class:"w-full p-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2
+                focus:ring-purple-500 focus:bg-white transition duration-150 ease-in-out" }}
+            </div>
+            <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold px-6 py-2 rounded-lg shadow transition duration-300">
+                Submit Answer
+            </button>
+        </form>
+    </div>
+
+    <!-- Answers List -->
+    <h3 class="text-xl font-bold text-gray-800 mb-4">Answers</h3>
+
+    {% for answer in question.answers.all %}
+    <div class="bg-white border border-gray-200 p-5 rounded-lg mb-4 shadow-sm hover:shadow-md transition duration-200">
+        <div class="flex items-start gap-4">
+
+            <!-- Avatar -->
+            <div class="flex-shrink-0 w-10 h-10 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                {{ answer.user.username|first|upper }}
+            </div>
+
+            <!-- Answer Content -->
+            <div>
+                <p class="text-gray-700">{{ answer.content }}</p>
+                <p class="text-xs text-gray-500 mt-2">
+                    Answered by <span class="font-medium text-gray-700">{{ answer.user.username }}</span> on {{ answer.created_at|date:"M d, Y" }}
+                </p>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <p class="text-gray-600">No answers yet. Be the first to answer!</p>
+    {% endfor %}
+
 </div>
 
-<h2>Answers</h2>
-{% for answer in answers %}
-<div>
-    <p>{{ answer.text }}</p>
-    <p>Answered by: {{ answer.user.username }} on {{ answer.created_at }}</p>
-    <form action="{% url 'like_answer' answer.id %}" method="post">
-        {% csrf_token %}
-        <button type="submit">
-                    {% if user in answer.likes.all %}
-                        Unlike
-                    {% else %}
-                        Like
-                    {% endif %}
-                </button>
-        <span>{{ answer.total_likes }} like{{ answer.total_likes|pluralize }}</span>
-    </form>
-</div>
-{% empty %}
-<p>No answers have been posted yet.</p>
-{% endfor %}
-
-<h2>Your Answer</h2>
-<form method="post">
-    {% csrf_token %} {{ form.as_p }}
-    <button type="submit">Post Answer</button>
-</form>
 {% endblock %}
